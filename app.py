@@ -154,13 +154,6 @@ def home():
 # ---------- PÁGINA DE DOCUMENTAÇÃO (entra em “default”) ----------
 @app.route("/documentacao", methods=["GET"])
 def documentacao():
-    """
-    Página que exibe o Swagger UI dentro de um iframe menor.
-    ---
-    responses:
-      200:
-        description: Exibe o Swagger UI em tamanho reduzido.
-    """
     return """
     <!DOCTYPE html>
     <html lang="pt-br">
@@ -203,7 +196,7 @@ def documentacao():
       <h1>Documentação da API</h1>
       <p>Abaixo está o Swagger UI incorporado:</p>
       <div class="iframe-container">
-        <iframe src="/apidocs"></iframe>
+        <iframe src="/apidocs/"></iframe>
       </div>
       <p><a class="back" href="/">← Voltar ao menu principal</a></p>
     </body>
