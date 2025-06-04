@@ -1,197 +1,56 @@
 # API Vitivinicultura Embrapa
 
-Este repositório contém a implementação de uma API REST em Python (Flask) para consulta aos dados de vitivinicultura da Embrapa, protegida por JWT e documentada via Swagger. Inclui também o plano arquitetural (diagrama) que mostra como esses dados podem ser consumidos por futuras aplicações ou dashboards.
+Este repositório contém a implementação de uma API REST em Python (Flask) para consulta aos dados de vitivinicultura da Embrapa, protegida por JWT e documentada via Swagger. Além disso, inclui o plano arquitetural (diagrama) que mostra como esses dados podem ser consumidos por futuras aplicações ou dashboards.
 
----
+Índice
 
-## Índice
+Arquitetura do Projeto
 
-1. [Arquitetura do Projeto](#arquitetura-do-projeto)  
-2. [Pré-requisitos](#pré-requisitos)  
-3. [Configuração do Ambiente Local](#configuração-do-ambiente-local)  
-4. [Variáveis de Ambiente](#variáveis-de-ambiente)  
-5. [Execução da API Flask](#execução-da-api-flask)  
-   1. [Instalar Dependências](#51-instalar-dependências)  
-   2. [Executar Localmente](#52-executar-localmente)  
-   3. [Autenticação (JWT)](#53-autenticação-jwt)  
-   4. [Swagger UI](#54-swagger-ui)  
-6. [Plano de Arquitetura e Deploy](#plano-de-arquitetura-e-deploy)  
-   1. [Descrição de Componentes (Resumo)](#61-descrição-de-componentes-resumo)  
-   2. [Cenário de Uso / Dashboard](#62-cenário-de-uso--dashboard)  
-   3. [Deploy no Railway (etapas rápidas)](#63-deploy-no-railway-etapas-rápidas)  
-   4. [Link Compartilhável da API](#64-link-compartilhável-da-api)  
-7. [Estrutura do Projeto](#estrutura-do-projeto)  
+Pré-requisitos
 
----
+Configuração do ambiente local
 
-## Arquitetura do Projeto
+Variáveis de ambiente
 
-A seguir, o diagrama ilustra o fluxo completo, desde a obtenção dos dados até o cenário de uso final:
-
-![Arquitetura Geral](Arquitetura.jpg)
-
-### Descrição de cada bloco
-
-1. **Fontes da Embrapa (CSV)**  
-   - As abas “Produção”, “Processamento”, “Comercialização”, “Importação” e “Exportação” disponibilizam arquivos CSV que podem ser baixados manualmente ou via script agendado.  
-
-2. **API Flask**  
-   - Endpoints REST:  
-     - `POST /login` → emissão de JWT  
-     - `GET /producao`  
-     - `GET /processamento`  
-     - `GET /comercializacao`  
-     - `GET /importacao`  
-     - `GET /exportacao`  
-   - Cada rota baixa o CSV correspondente, processa e retorna JSON no formato longo (`categoria`, `ano`, `valor`).  
-   - Documentação via Swagger UI em `/apidocs` e embutida em `/documentacao`.  
-
-3. **Banco de Dados PostgreSQL (opcional)**  
-   - Caso seja necessário armazenar histórico, crie tabelas:  
-     ```sql
-     CREATE TABLE producao (
-       categoria TEXT,
-       ano       INT,
-       valor     NUMERIC
-     );
-     ```
-     (idem para processamento, comercializacao, importacao, exportacao)  
-   - Esses dados podem ser consumidos por notebooks ou dashboards.  
-
-4. **Pipeline de ETL (opcional)**  
-   - Job agendado (cron, GitHub Actions) que:  
-     1. Baixa CSVs da Embrapa (ou consome API)  
-     2. Normaliza e valida  
-     3. Carrega o banco de dados  
-
-5. **Serviço de Inferência / ML (hipótese)**  
-   - Exemplo de rota futura: `POST /prever-producao`  
-   - Recebe `{ "categoria": "VINHO DE MESA", "ano_referencia": 2023 }`  
-   - Retorna `{ "ano_previsto": 2024, "prev_valor": 180000000 }`  
-   - Modelo treinado em Python consumindo o histórico do banco.  
-
-6. **Deploy no Railway**  
-   - Repositório GitHub conectado ao Railway.  
-   - `requirements.txt` define dependências.  
-   - Start Command: `python app.py`.  
-   - Variáveis de ambiente configuradas (p. ex. `JWT_SECRET_KEY`).  
-   - Domínio público gerado:  
-     ```
-     https://tech-challenger-vitivinicultura-production.up.railway.app
-     ```
-
----
-
-## Pré-requisitos
-
-- Python 3.13+  
-- pip (>= 21)  
-- (Opcional) PostgreSQL local ou em nuvem, se desejar persistir dados  
-- (Opcional) Railway CLI ou acesso ao painel do Railway  
-
----
-
-## Configuração do Ambiente Local
-
-1. Clone este repositório:  
-   ```bash
-   git clone https://github.com/PVAdvolveAi/tech-challenger-vitivinicultura.git
-   cd tech-challenger-vitivinicultura
-Crie e ative um ambiente virtual:
-
-Linux/Mac
-
-bash
-Copiar
-Editar
-python3 -m venv venv
-source venv/bin/activate
-Windows (PowerShell)
-
-powershell
-Copiar
-Editar
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-Instale as dependências:
-
-bash
-Copiar
-Editar
-pip install --upgrade pip
-pip install -r requirements.txt
-Variáveis de Ambiente
-Defina no terminal a chave para JWT antes de rodar a API:
-
-Linux/Mac
-
-bash
-Copiar
-Editar
-export JWT_SECRET_KEY="uma_chave_super_secreta"
-Windows (PowerShell)
-
-powershell
-Copiar
-Editar
-$env:JWT_SECRET_KEY = "uma_chave_super_secreta"
 Execução da API Flask
-5.1. Instalar Dependências Específicas
-Caso deseje instalar manualmente apenas o essencial:
 
-bash
-Copiar
-Editar
-pip install flask flasgger flask-jwt-extended requests pandas beautifulsoup4
-5.2. Executar Localmente
-Garanta que JWT_SECRET_KEY esteja definido no ambiente.
+5.1. Instalar dependências
 
-Inicie o servidor:
+5.2. Executar localmente
 
-bash
-Copiar
-Editar
-python app.py
-A API ficará disponível em
-
-cpp
-Copiar
-Editar
-http://127.0.0.1:5000
 5.3. Autenticação (JWT)
-POST /login
-
-Content-Type: application/json
-
-Body:
-
-json
-Copiar
-Editar
-{
-  "username": "admin",
-  "password": "senha123"
-}
-Resposta:
-
-json
-Copiar
-Editar
-{
-  "access_token": "<seu_token_JWT>"
-}
-Utilize o token retornado no header Authorization: Bearer <token> para acessar as rotas protegidas.
 
 5.4. Swagger UI
-Acesse no navegador:
 
-arduino
-Copiar
-Editar
-http://127.0.0.1:5000/documentacao
-Clique em Authorize e cole Bearer <seu_token_JWT>.
+Plano de Arquitetura e Deploy
 
-Use “Try it out” para testar endpoints:
+6.1. Descrição de componentes (resumo)
+
+6.2. Cenário de Uso / Dashboard
+
+6.3. Deploy em Heroku (etapas rápidas)
+
+6.4. Link Compartilhável da API
+
+Estrutura do projeto
+
+Arquitetura do Projeto
+
+A seguir, diagrama ilustra o fluxo completo desde a obtenção dos dados até o cenário de uso final:
+
+
+
+Descrição de cada bloco:
+
+Fontes da Embrapa (CSV)
+
+As abas “Produção”, “Processamento”, “Comercialização”, “Importação” e “Exportação” disponibilizam arquivos CSV.
+
+Esses arquivos podem ser baixados manualmente ou via script agendado, servindo como dados de entrada.
+
+API Flask
+
+Expõe endpoints REST para cada aba:
 
 GET /producao
 
@@ -213,88 +72,51 @@ API Flask (REST + JWT + Swagger)
 – Documentação em Swagger.
 
 Banco de Dados PostgreSQL (Não implementado)
-– Tabelas para historizar cada aba.
 
-Pipeline ETL (Não implementado)
-– Job agendado que ingere CSVs e popula o banco.
+Cenário de Uso / Dashboard
 
-Serviço de Inferência / ML (Hipotético)
-– Endpoint de previsão consumindo modelo treinado.
+5.2. Cenário de Uso / Dashboard
 
-Deploy no Railway
-– Build automático via requirements.txt,
-– Start: python app.py,
-– Variáveis: JWT_SECRET_KEY,
-– Domínio público gerado.
+"Dashboard de Monitoramento Sazonal": consome dados da API para exibir séries históricas e previsões básicas.
 
-6.2. Cenário de Uso / Dashboard
-“Dashboard de Monitoramento Sazonal”:
+5.3. Deploy em Heroku (etapas rápidas)
 
-O frontend (React, Streamlit etc.) faz chamadas à API para obter séries históricas.
+heroku login
 
-Exibe gráficos interativos (filtros por ano, categoria).
+heroku create nome-do-app-vitibrasil
 
-Mostra indicadores (média móvel, variação percentual).
+git push heroku main (ou master)
 
-Em futuro, pode chamar o endpoint de previsão para exibir tendências.
+Defina JWT_SECRET_KEY no Dashboard Heroku → Settings → Config Vars
 
-6.3. Deploy no Railway (Etapas Rápidas)
-No painel do Railway, crie um novo projeto a partir do repositório GitHub.
+Adicione Heroku Postgres e, se desejar, armazene dados
 
-Certifique-se de que requirements.txt contenha todas as bibliotecas.
+Acesse:
 
-Defina a variável de ambiente JWT_SECRET_KEY.
+https://nome-do-app-vitibrasil.herokuapp.com
 
-Em “Settings → Networking”, clique em Generate Domain (se ainda não tiver domínio).
+e a documentação em:
 
-Em “Settings → Build & Deploy”, verifique que o comando de start seja:
+https://nome-do-app-vitibrasil.herokuapp.com/documentacao
 
-nginx
-Copiar
-Editar
-python app.py
-Deploy automático ocorrerá ao dar push em main.
+5.4. Link Compartilhável da API
 
-Aguarde “Succeeded” e copie o domínio gerado, que será algo como:
+Página inicial: https://nome-do-app-vitibrasil.herokuapp.com/
 
-arduino
-Copiar
-Editar
-https://tech-challenger-vitivinicultura-production.up.railway.app
-6.4. Link Compartilhável da API
-Página Inicial (Instruções)
+Swagger UI: https://nome-do-app-vitibrasil.herokuapp.com/documentacao
 
-arduino
-Copiar
-Editar
-https://tech-challenger-vitivinicultura-production.up.railway.app/
-Swagger UI (Documentação)
+Endpoints: GET https://nome-do-app-vitibrasil.herokuapp.com/producao (envie o header Authorization: Bearer <token>)
 
-arduino
-Copiar
-Editar
-https://tech-challenger-vitivinicultura-production.up.railway.app/documentacao
-Exemplo de chamada (Produção)
+6. Estrutura do projeto
 
-bash
-Copiar
-Editar
-curl -X GET "https://tech-challenger-vitivinicultura-production.up.railway.app/producao" \
-     -H "Authorization: Bearer <seu_token_JWT>"
-Estrutura do Projeto
-bash
-Copiar
-Editar
-/
-├─ app.py                   # Aplicação Flask + Swagger + JWT
-├─ scraper.py               # Script para baixar e processar CSVs da Embrapa
-├─ requirements.txt         # Lista de dependências
-├─ Procfile                 # "web: python app.py" (para Heroku, opcional aqui)
-├─ Arquitetura2.jpg         # Diagrama geral do fluxo de dados
-└─ README.md                # Instruções e Plano de Arquitetura (este arquivo)
-Fim do README.md
+/                             # raiz do repositório
+├─ app.py                     # aplicação Flask + Swagger + JWT
+├─ scraper.py                 # script para encontrar e processar CSVs da Embrapa
+├─ requirements.txt           # lista de dependências
+├─ Procfile (para Heroku)     # "web: python app.py"
+├─ runtime.txt (opcional)     # para especificar versão do Python no Heroku
+├─ Arquitetura.jpg            # diagrama geral do fluxo de dados
+└─ README.md                  # este arquivo de instruções
 
-
-
-
+Fim do README
 
